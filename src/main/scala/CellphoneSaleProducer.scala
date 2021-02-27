@@ -12,6 +12,7 @@ object CellphoneSaleProducer extends AppConfigs {
   private val log = LogManager.getLogger
 
   def main(args: Array[String]): Unit = {
+
     val properties = new Properties
     properties.setProperty(ProducerConfig.CLIENT_ID_CONFIG, ApplicationID)
     properties.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, BootStrapServers)
