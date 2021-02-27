@@ -11,7 +11,7 @@ object ToCassandra extends AppConfigs {
   val mobileSchema: StructType = StructType(Array(
     StructField("model", StringType,nullable = true),
     StructField("amount", IntegerType,nullable = true),
-    StructField("instance", StringType, nullable = true)
+    StructField("boughtAt", StringType, nullable = true)
   ))
 
   def SparkInitializer: SparkSession = {
@@ -44,15 +44,15 @@ object ToCassandra extends AppConfigs {
 
     val JStream = SparkInitializer.readStream.format("kafka")
       .option("kafka.bootstrap.servers", BootStrapServers)
-      .option("subscribe", Topic).load
+      .option("subscribe", Topic)
+      .option("failOnDataLoss","false").load
 
     val streamDF = JStream.select(from_json(col("value").cast("string"), mobileSchema).as("mobilesDF"))
       .select(col("mobilesDF.model").as("model"), col("mobilesDF.amount").as("amount"),
-        to_timestamp(col("mobilesDF.instance"), "yyyy-MM-dd HH:mm:ss.SSS").alias("instance"))
+        to_timestamp(col("mobilesDF.boughtAt"), "yyyy-MM-dd HH:mm:ss.SSS").alias("instance"))
 
     val AggDF = aggregatedDF(streamDF)
-
-   toCassandra(AggDF).start.awaitTermination
+    toCassandra(AggDF).start.awaitTermination
 
   }
 }
